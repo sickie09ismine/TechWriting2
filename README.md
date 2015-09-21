@@ -1,5 +1,6 @@
 # TechWriting2
 Kalan Matthews
+To run this Oracle SQL program you will need Oracle SQL developer: http://www.oracle.com/technetwork/developer-tools/sql-developer/overview/index-097090.html
 
 This program is to create and modify tables Named: Department, Project, Employee, WorksOn
 
