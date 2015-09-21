@@ -16,4 +16,4 @@ The queries that exist in lines 68-94 are test queries to ensure that the tables
 -The first querie will count how many of each sex there are in each department
 -The second querie will pull up any employee with the position "secretary"
 -The third querie will pull up any employee that is a manager
--The fourth querie will pull up anyone that has less than or equal to 1 hour worked or someone that is on payrool bu have not worked.
+-The fourth querie will pull up anyone that has less than or equal to 1 hour worked or someone that is on payroll but have not worked.
