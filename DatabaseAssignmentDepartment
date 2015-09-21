@@ -1,0 +1,94 @@
+DROP TABLE DepartmentKBM CASCADE CONSTRAINTS PURGE;
+CREATE TABLE DepartmentKBM (
+	deptNo	CHAR(3) PRIMARY KEY NOT NULL,
+	deptName	VARCHAR2(30) NOT NULL,
+	mgrEmpNo	CHAR(6) NOT NULL
+	);
+	
+DROP TABLE ProjectKBM CASCADE CONSTRAINTS PURGE;
+CREATE TABLE ProjectKBM (
+	projNo	CHAR(4) PRIMARY KEY NOT NULL,
+	projName	VARCHAR2(45) NOT NULL,
+	deptNo	CHAR(3) NOT NULL
+	);
+	
+DROP TABLE EmployeeKBM CASCADE CONSTRAINTS PURGE;
+CREATE TABLE EmployeeKBM (
+	empNo	CHAR(6) PRIMARY KEY NOT NULL,
+	lName	VARCHAR2(10) NOT NULL,
+	fName	VARCHAR2(10) NOT NULL,
+	sex		CHAR(1) NOT NULL,
+	dob		DATE NOT NULL,
+	address	VARCHAR2(35),
+	deptNo	CHAR(3) NOT NULL,
+	position	VARCHAR2(30) NOT NULL
+	);
+	
+DROP TABLE WorksOnKBM CASCADE CONSTRAINTS PURGE;
+CREATE TABLE WorksOnKBM (
+	empNo	CHAR(6) NOT NULL,
+	projNo	CHAR(4) NOT NULL,
+	dateWorked	DATE NOT NULL,
+	hoursWorked	NUMBER(4,2) NOT NULL
+	);
+	
+ALTER TABLE EmployeeKBM
+	ADD CONSTRAINT EmployeeKBM_FK FOREIGN KEY(deptNo) REFERENCES DepartmentKBM(deptNo);
+ALTER TABLE EmployeeKBM
+	ADD CONSTRAINT EmployeeKBM_CK 
+		CHECK(sex IN('m','f','M','F'));
+		
+		
+ALTER TABLE DepartmentKBM
+	ADD CONSTRAINT DepartmentKBM_FK FOREIGN KEY(mgrEmpNo) REFERENCES EmployeeKBM(empNo) ON DELETE CASCADE;	
+	
+	
+ALTER TABLE ProjectKBM
+	ADD CONSTRAINT ProjectKBM_FK FOREIGN KEY(deptNo) REFERENCES DepartmentKBM(deptNo) ON DELETE CASCADE;
+ALTER TABLE ProjectKBM
+	ADD CONSTRAINT ProjectKBM_CK 
+		CHECK(projNo > 0);
+
+		
+		
+ALTER TABLE WorksOnKBM
+	ADD CONSTRAINT WorksOnKBM_PK PRIMARY KEY(empNo,projNo,dateWorked);
+ALTER TABLE WorksOnKBM
+	ADD CONSTRAINT WorksOnKBM_FK FOREIGN KEY(empNo) REFERENCES EmployeeKBM(empNo) ON DELETE SET NULL;
+ALTER TABLE WorksOnKBM
+	ADD CONSTRAINT WorksOnKBM_FK2 FOREIGN KEY(projNo) REFERENCES ProjectKBM(projNo)ON DELETE CASCADE;
+	
+	@F:\database\DepartmentKBM_raw.sql
+@F:\database\EmployeeKBM_raw.sql
+@F:\database\WorksOnKBM_raw.sql
+@F:\database\ProjectKBM_raw.sql
+
+
+
+1.) SELECT deptName AS "Department Name", COUNT(DECODE(sex,'M',sex))AS Male, COUNT(DECODE(sex,'F',sex)) AS Female, COUNT(sex) AS Subtotal
+FROM DepartmentKBM JOIN EmployeeKBM ON (DepartmentKBM.deptNo = EmployeeKBM.deptNo)
+GROUP BY ROLLUP(deptName)
+ORDER BY COUNT(sex)
+
+
+
+2.) SELECT DepartmentKBM.deptNo,deptName,EmployeeKBM.empNo, FnAME, lName 
+	FROM DepartmentKBM LEFT OUTER JOIN EmployeeKBM
+	ON(DepartmentKBM.deptNo = EmployeeKBM.deptNo)
+	WHERE EmployeeKBM.position = 'Secretary'
+	ORDER BY EmployeeKBM.deptNo;
+
+
+3.) SELECT fName, lName, empNo,deptName,position
+FROM DepartmentKBM CROSS JOIN EmployeeKBM
+WHERE EmployeeKBM.empNo = DepartmentKBM.mgrEmpNo
+ORDER BY deptName
+
+4.)SELECT fName ||' '|| lName AS Name,EmployeeKBM.empNo,DepartmentKBM.deptName
+FROM EmployeeKBM LEFT OUTER JOIN WorksOnKBM
+  ON (EmployeeKBM.empNo = WorksOnKBM.empNo) 
+JOIN DepartmentKBM
+  ON EmployeeKBM.deptNo = DepartmentKBM.deptNo
+GROUP BY fName, lName, EmployeeKBM.empNo, DepartmentKBM.deptName 
+HAVING SUM(hoursWorked) <= 1 OR SUM(hoursWorked) IS NULL
+ORDER BY deptName,lName
